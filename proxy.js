@@ -132,24 +132,11 @@ function onrequest(req, res) {
 		// setup outbound proxy request HTTP headers
 		var headers = {};
 		var hasXForwardedFor = false;
-		var hasVia = false;
-		var via = '1.1 ' + hostname + ' (proxy/' + version + ')';
 
 		parsed.headers = headers;
 		eachHeader(req, function(key, value) {
 			debug.request('Request Header: "%s: %s"', key, value);
 			var keyLower = key.toLowerCase();
-
-			if (!hasVia && 'via' === keyLower) {
-				// append to existing "Via" header
-				hasVia = true;
-				value += ', ' + via;
-				debug.proxyRequest(
-					'appending to existing "%s" header: "%s"',
-					key,
-					value
-				);
-			}
 
 			if (isHopByHop.test(key)) {
 				debug.proxyRequest('ignoring hop-by-hop header "%s"', key);
@@ -164,12 +151,6 @@ function onrequest(req, res) {
 				}
 			}
 		});
-
-		// add "Via" header if still not set by now
-		if (!hasVia) {
-			headers.Via = via;
-			debug.proxyRequest('adding new "Via" header: "%s"', headers.Via);
-		}
 
 		// custom `http.Agent` support, set `server.agent`
 		var agent = server.agent;
