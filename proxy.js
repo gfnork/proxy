@@ -140,18 +140,6 @@ function onrequest(req, res) {
 			debug.request('Request Header: "%s: %s"', key, value);
 			var keyLower = key.toLowerCase();
 
-			if (!hasXForwardedFor && 'x-forwarded-for' === keyLower) {
-				// append to existing "X-Forwarded-For" header
-				// http://en.wikipedia.org/wiki/X-Forwarded-For
-				hasXForwardedFor = true;
-				value += ', ' + socket.remoteAddress;
-				debug.proxyRequest(
-					'appending to existing "%s" header: "%s"',
-					key,
-					value
-				);
-			}
-
 			if (!hasVia && 'via' === keyLower) {
 				// append to existing "Via" header
 				hasVia = true;
@@ -176,16 +164,6 @@ function onrequest(req, res) {
 				}
 			}
 		});
-
-		// add "X-Forwarded-For" header if it's still not here by now
-		// http://en.wikipedia.org/wiki/X-Forwarded-For
-		if (!hasXForwardedFor) {
-			headers['X-Forwarded-For'] = socket.remoteAddress;
-			debug.proxyRequest(
-				'adding new "X-Forwarded-For" header: "%s"',
-				headers['X-Forwarded-For']
-			);
-		}
 
 		// add "Via" header if still not set by now
 		if (!hasVia) {
